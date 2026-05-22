@@ -677,11 +677,11 @@
 <section class="hero">
   <div class="container">
     <div class="hero-badge">Open Source CI/CD</div>
-    <h1>The CI/CD that <span class="accent">grows with you.</span></h1>
+    <h1>PikoCI, the CI/CD that <span class="accent">grows with you.</span></h1>
     <p class="subtitle">One binary. Any database. Any queue. Runs anywhere.</p>
     <div class="hero-cta">
       <a href="https://github.com/pikoci/pikoci#quick-start" class="btn btn-primary" onclick="gtag('event', 'click', {event_category: 'hero', event_label: 'get_started'})">Get Started</a>
-      <a href="https://ci.pikoci.com/teams/main/pipelines/pr_test" class="btn btn-ghost" onclick="gtag('event', 'click', {event_category: 'hero', event_label: 'see_it_live'})">See it live</a>
+      <a href="https://ci.pikoci.com/teams/main/pipelines/pikoci" class="btn btn-ghost" onclick="gtag('event', 'click', {event_category: 'hero', event_label: 'see_it_live'})">See it live</a>
     </div>
     <p class="hero-note">Apache 2.0 licensed. Inspired by <a href="https://concourse-ci.org">Concourse CI</a>.</p>
   </div>
@@ -699,10 +699,10 @@
       <div class="pipeline-toolbar">
         <div class="pipeline-toolbar-left">
           <div class="pipeline-dot"></div>
-          <span>pr_test / main</span>
+          <span>pikoci / main</span>
         </div>
         <div class="pipeline-toolbar-right">
-          <a href="https://ci.pikoci.com/teams/main/pipelines/pr_test">View full pipeline</a>
+          <a href="https://ci.pikoci.com/teams/main/pipelines/pikoci">View full pipeline</a>
         </div>
       </div>
       <div id="pipeline-graph">
@@ -904,7 +904,7 @@
     <ul class="footer-links">
       <li><a href="https://github.com/pikoci/pikoci">GitHub</a></li>
       <li><a href="https://github.com/pikoci/pikoci/wiki">Docs</a></li>
-      <li><a href="https://ci.pikoci.com/teams/main/pipelines/pr_test">Live Pipeline</a></li>
+      <li><a href="https://ci.pikoci.com/teams/main/pipelines/pikoci">Live Pipeline</a></li>
       <li><a href="https://ci.pikoci.com">App</a></li>
     </ul>
   </div>
@@ -928,7 +928,7 @@
   async function loadPipeline() {
     const container = document.getElementById('pipeline-graph');
     try {
-      const resp = await fetch('https://ci.pikoci.com/teams/main/pipelines/pr_test/image.dot', {
+      const resp = await fetch('https://ci.pikoci.com/teams/main/pipelines/pikoci/image.dot', {
         headers: { 'Content-Type': 'application/json' }
       });
       const data = await resp.json();
@@ -967,7 +967,7 @@
         container.appendChild(svg);
       }
     } catch (e) {
-      container.innerHTML = '<span class="loading">Pipeline unavailable. <a href="https://ci.pikoci.com/teams/main/pipelines/pr_test" style="color: var(--accent);">View on ci.pikoci.com</a></span>';
+      container.innerHTML = '<span class="loading">Pipeline unavailable. <a href="https://ci.pikoci.com/teams/main/pipelines/pikoci" style="color: var(--accent);">View on ci.pikoci.com</a></span>';
     }
   }
 
