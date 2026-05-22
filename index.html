@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PikoCI - The CI/CD that grows with you</title>
+  <meta name="description" content="One binary. Any database. Any queue. Runs anywhere. Open-source CI/CD inspired by Concourse CI.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='50,3 93,27.5 93,72.5 50,97 7,72.5 7,27.5' fill='%2329ADFF' stroke='%23FFEC27' stroke-width='3.5'/%3E%3Cpath d='M50,23 A27,27 0 1,1 26,64' fill='none' stroke='%23FFF1E8' stroke-width='7' stroke-linecap='round'/%3E%3Cpolygon points='17,56 26,76 40,62' fill='%23FFF1E8'/%3E%3Ccircle cx='50' cy='50' r='7' fill='%23FFEC27'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
+  <style>
+    :root {
+      /* PICO-8 palette */
+      --p8-black: #000000;
+      --p8-dark-blue: #1D2B53;
+      --p8-dark-purple: #7E2553;
+      --p8-dark-green: #008751;
+      --p8-brown: #AB5236;
+      --p8-dark-grey: #5F574F;
+      --p8-light-grey: #C2C3C7;
+      --p8-white: #FFF1E8;
+      --p8-red: #FF004D;
+      --p8-orange: #FFA300;
+      --p8-yellow: #FFEC27;
+      --p8-green: #00E436;
+      --p8-blue: #29ADFF;
+      --p8-lavender: #83769C;
+      --p8-pink: #FF77A8;
+      --p8-peach: #FFCCAA;
+
+      --bg-deep: #0a0f1e;
+      --bg-surface: #111827;
+      --bg-card: #1a2238;
+      --text-primary: #FFF1E8;
+      --text-secondary: #C2C3C7;
+      --text-muted: #83769C;
+      --accent: #29ADFF;
+      --accent-hover: #1D8BD1;
+      --success: #00A83A;
+      --border: #1D2B53;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Scanline overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.03) 2px,
+        rgba(0, 0, 0, 0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Grid background */
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(29, 43, 83, 0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(29, 43, 83, 0.15) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* --- NAV --- */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      background: rgba(10, 15, 30, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-brand svg { width: 28px; height: 28px; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text-primary); }
+
+    .nav-links .btn-nav {
+      color: var(--bg-deep);
+      background: var(--accent);
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .nav-links .btn-nav:hover { background: var(--accent-hover); color: var(--bg-deep); }
+
+    /* --- HERO --- */
+    .hero {
+      padding: 180px 0 100px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 32px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.1s forwards;
+    }
+
+    .hero h1 .accent { color: var(--accent); }
+
+    .hero .subtitle {
+      font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 48px;
+      line-height: 1.6;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.2s forwards;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.3s forwards;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg-deep);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid rgba(255, 241, 232, 0.2);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+
+    .hero-note {
+      margin-top: 32px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.4s forwards;
+    }
+
+    .hero-note a {
+      color: var(--text-secondary);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .hero-note a:hover { color: var(--text-primary); }
+
+    /* --- LIVE PIPELINE --- */
+    .section { padding: 100px 0; }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+      line-height: 1.15;
+    }
+
+    .section-desc {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 780px;
+      line-height: 1.7;
+    }
+
+    .pipeline-section .section-desc { margin-bottom: 40px; }
+
+    .pipeline-viewer {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .pipeline-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .pipeline-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+    }
+
+    .pipeline-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s ease infinite;
+    }
+
+    .pipeline-toolbar-right a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.8rem;
+    }
+
+    .pipeline-toolbar-right a:hover { text-decoration: underline; }
+
+    #pipeline-graph {
+      padding: 32px;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: auto;
+    }
+
+    #pipeline-graph svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    #pipeline-graph .loading {
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    /* Style the rendered SVG graph */
+    #pipeline-graph svg text {
+      font-family: 'JetBrains Mono', monospace !important;
+      font-size: 11px !important;
+    }
+
+    #pipeline-graph svg polygon,
+    #pipeline-graph svg ellipse {
+      transition: opacity 0.2s;
+    }
+
+    .pipeline-public-note {
+      padding: 10px 20px;
+      border-top: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pipeline-public-note a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.75rem;
+    }
+
+    .pipeline-public-note a:hover { text-decoration: underline; }
+
+    /* --- FEATURES --- */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 48px;
+    }
+
+    .feature-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(41, 173, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .feature-card p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .feature-card code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      background: rgba(41, 173, 255, 0.1);
+      color: var(--accent);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* --- CODE SECTION --- */
+    .code-block {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 40px;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .code-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-header .dot-red { background: var(--p8-red); }
+    .code-header .dot-yellow { background: var(--p8-yellow); }
+    .code-header .dot-green { background: var(--p8-green); }
+
+    .code-tabs {
+      display: flex;
+      gap: 0;
+      margin-left: auto;
+    }
+
+    .code-tab {
+      padding: 4px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .code-tab:hover { color: var(--text-secondary); }
+
+    .code-tab.active {
+      color: var(--text-primary);
+      background: var(--bg-deep);
+      border-color: var(--border);
+    }
+
+    .code-body {
+      padding: 24px;
+      overflow-x: auto;
+    }
+
+    .code-panel { display: none; }
+    .code-panel.active { display: block; }
+
+    .code-body pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+    }
+
+    .code-body .kw { color: var(--accent); }
+    .code-body .str { color: var(--p8-green); }
+    .code-body .bool { color: var(--p8-orange); }
+    .code-body .comment { color: var(--text-muted); font-style: italic; }
+    .code-body .fn { color: var(--p8-yellow); }
+    .code-body .punct { color: var(--text-muted); }
+
+    .code-caption {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .code-caption a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .code-caption a:hover { text-decoration: underline; }
+
+    /* --- QUICKSTART --- */
+    .quickstart {
+      text-align: center;
+    }
+
+    .quickstart .section-desc {
+      margin: 0 auto 40px;
+    }
+
+    .terminal {
+      background: var(--p8-black);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      text-align: left;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(29, 43, 83, 0.5);
+    }
+
+    .terminal-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    .terminal-body {
+      padding: 24px;
+    }
+
+    .terminal-body pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 2;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .terminal-body .prompt { color: var(--accent); }
+    .terminal-body .cmd { color: var(--text-primary); }
+    .terminal-body .comment { color: var(--text-muted); }
+
+    .quickstart-note {
+      margin-top: 24px;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    /* --- FOOTER --- */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      margin-top: 40px;
+    }
+
+    footer .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-left {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text-primary); }
+
+    /* --- ANIMATIONS --- */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 1024px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .hero { padding: 140px 0 60px; }
+      .section { padding: 60px 0; }
+      .nav-links { gap: 12px; }
+      .nav-links .hide-mobile { display: none; }
+      .nav-links .btn-nav { padding: 6px 14px; font-size: 0.85rem; }
+      .features-grid { grid-template-columns: 1fr !important; }
+      .code-tabs { display: none; }
+      footer .container { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- Nav -->
+<nav>
+  <div class="container">
+    <a href="/" class="nav-brand">
+      <svg viewBox="0 0 100 100"><polygon points="50,3 93,27.5 93,72.5 50,97 7,72.5 7,27.5" fill="#29ADFF" stroke="#FFEC27" stroke-width="3.5"/><path d="M50,23 A27,27 0 1,1 26,64" fill="none" stroke="#FFF1E8" stroke-width="7" stroke-linecap="round"/><polygon points="17,56 26,76 40,62" fill="#FFF1E8"/><circle cx="50" cy="50" r="7" fill="#FFEC27"/></svg>
+      PikoCI
+    </a>
+    <ul class="nav-links">
+      <li><a href="https://github.com/pikoci/pikoci/wiki" class="hide-mobile">Docs</a></li>
+      <li><a href="https://github.com/pikoci/pikoci"><img src="https://img.shields.io/github/stars/pikoci/pikoci?style=social" alt="GitHub stars" style="height: 20px; vertical-align: middle;"></a></li>
+      <li><a href="#pipeline" class="hide-mobile">Live Pipeline</a></li>
+      <li><a href="https://github.com/pikoci/pikoci#quick-start" class="btn-nav">Get Started</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">Open Source CI/CD</div>
+    <h1>The CI/CD that <span class="accent">grows with you.</span></h1>
+    <p class="subtitle">One binary. Any database. Any queue. Runs anywhere.</p>
+    <div class="hero-cta">
+      <a href="https://github.com/pikoci/pikoci#quick-start" class="btn btn-primary" onclick="gtag('event', 'click', {event_category: 'hero', event_label: 'get_started'})">Get Started</a>
+      <a href="https://ci.pikoci.com/teams/main/pipelines/pr_test" class="btn btn-ghost" onclick="gtag('event', 'click', {event_category: 'hero', event_label: 'see_it_live'})">See it live</a>
+    </div>
+    <p class="hero-note">Apache 2.0 licensed. Inspired by <a href="https://concourse-ci.org">Concourse CI</a>.</p>
+  </div>
+</section>
+
+<!-- Live Pipeline -->
+<section class="section pipeline-section fade-in" id="pipeline">
+  <div class="container">
+    <div class="section-label">Dogfooding</div>
+    <h2 class="section-title">PikoCI deploys itself.</h2>
+    <p class="section-desc">
+      The pipeline that builds, tests, and deploys PikoCI is publicly visible. PR checks, integration tests against six backends, multi-arch Docker builds, zero-downtime self-redeployment. No account required to view it.
+    </p>
+    <div class="pipeline-viewer">
+      <div class="pipeline-toolbar">
+        <div class="pipeline-toolbar-left">
+          <div class="pipeline-dot"></div>
+          <span>pr_test / main</span>
+        </div>
+        <div class="pipeline-toolbar-right">
+          <a href="https://ci.pikoci.com/teams/main/pipelines/pr_test">View full pipeline</a>
+        </div>
+      </div>
+      <div id="pipeline-graph">
+        <span class="loading">Loading live pipeline...</span>
+      </div>
+      <div class="pipeline-public-note">
+        <span>Public pipeline &middot; no login required &middot; view build status, logs, and pipeline graph without an account</span>
+        <a href="https://github.com/pikoci/pikoci/blob/master/deploy/pipeline.hcl">View pipeline.hcl on GitHub &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section fade-in">
+  <div class="container">
+    <div class="section-label">Why PikoCI</div>
+    <h2 class="section-title">What makes it different.</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background: rgba(0,228,54,0.1); color: var(--p8-green);">01</div>
+        <h3>Single binary</h3>
+        <p>No Docker Compose. No Kubernetes. No setup scripts. Download and run.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: rgba(255,163,0,0.1); color: var(--p8-orange);">02</div>
+        <h3>Grows with you</h3>
+        <p>Start in memory. Add SQLite for persistence. Add Postgres and distributed workers at scale. The tool never changes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: rgba(41,173,255,0.1); color: var(--accent);">03</div>
+        <h3>Run pipelines locally</h3>
+        <p>The pipeline is the environment. Run it anywhere. <code>pikoci run -p pipeline.hcl -j test</code> runs any job on your laptop &mdash; no server, no push, no waiting. Override resources with local paths. Iterate before touching CI.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: rgba(131,118,156,0.1); color: var(--p8-lavender);">04</div>
+        <h3>Four pluggable abstractions</h3>
+        <p>Resource types, runners, services, and secret backends. Define once, reuse across jobs. Source any of them from a URL.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: rgba(255,236,39,0.1); color: var(--p8-yellow);">05</div>
+        <h3>HCL pipelines</h3>
+        <p>Terraform-style syntax. More expressive than YAML. Readable, reviewable, versionable.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background: rgba(255,204,170,0.1); color: var(--p8-peach);">06</div>
+        <h3>Truly portable</h3>
+        <p>Bundle the binary with a pipeline file and SQLite. Move it anywhere. Run it instantly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Code Example -->
+<section class="section fade-in">
+  <div class="container">
+    <div class="section-label">Define your pipeline</div>
+    <h2 class="section-title">Pipelines as code.</h2>
+    <p class="section-desc">Clean HCL syntax. Resources flow through jobs. Dependencies are explicit. No magic.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+        <div class="code-tabs">
+          <button class="code-tab active" data-tab="basic">Basic</button>
+          <button class="code-tab" data-tab="services">With services</button>
+          <button class="code-tab" data-tab="secrets">With secrets</button>
+        </div>
+      </div>
+      <div class="code-body">
+        <!-- Tab: Basic -->
+        <div class="code-panel active" data-tab="basic">
+<pre><span class="kw">resource_type</span> <span class="str">"git"</span> <span class="punct">{</span>
+  <span class="fn">source</span> = <span class="str">"pikoci://git"</span>
+<span class="punct">}</span>
+
+<span class="kw">resource</span> <span class="str">"git"</span> <span class="str">"app"</span> <span class="punct">{</span>
+  <span class="kw">params</span> <span class="punct">{</span>
+    <span class="fn">url</span>  = <span class="str">"https://github.com/myorg/app.git"</span>
+    <span class="fn">name</span> = <span class="str">"app"</span>
+  <span class="punct">}</span>
+<span class="punct">}</span>
+
+<span class="kw">job</span> <span class="str">"test"</span> <span class="punct">{</span>
+  <span class="kw">get</span> <span class="str">"git"</span> <span class="str">"app"</span> <span class="punct">{</span>
+    <span class="fn">trigger</span> = <span class="bool">true</span>
+  <span class="punct">}</span>
+  <span class="kw">task</span> <span class="str">"run-tests"</span> <span class="punct">{</span>
+    <span class="kw">run</span> <span class="str">"docker"</span> <span class="punct">{</span>
+      <span class="fn">image</span> = <span class="str">"golang:1.25"</span>
+      <span class="fn">cmd</span>   = <span class="str">"cd app && go test ./..."</span>
+    <span class="punct">}</span>
+  <span class="punct">}</span>
+<span class="punct">}</span></pre>
+        </div>
+        <!-- Tab: With services -->
+        <div class="code-panel" data-tab="services">
+<pre><span class="kw">service_type</span> <span class="str">"postgres"</span> <span class="punct">{</span>
+  <span class="kw">start</span> <span class="str">"exec"</span> <span class="punct">{</span>
+    <span class="fn">path</span> = <span class="str">"/bin/sh"</span>
+    <span class="fn">args</span> = <span class="punct">[</span><span class="str">"-ec"</span><span class="punct">,</span> <span class="str">"docker run -d --name pikoci-pg -p 5432:5432 -e POSTGRES_PASSWORD=test postgres:16"</span><span class="punct">]</span>
+  <span class="punct">}</span>
+  <span class="kw">ready_check</span> <span class="str">"exec"</span> <span class="punct">{</span>
+    <span class="fn">path</span>     = <span class="str">"/bin/sh"</span>
+    <span class="fn">args</span>     = <span class="punct">[</span><span class="str">"-ec"</span><span class="punct">,</span> <span class="str">"docker exec pikoci-pg pg_isready"</span><span class="punct">]</span>
+    <span class="fn">interval</span> = <span class="str">"2s"</span>
+    <span class="fn">timeout</span>  = <span class="str">"30s"</span>
+  <span class="punct">}</span>
+  <span class="kw">stop</span> <span class="str">"exec"</span> <span class="punct">{</span>
+    <span class="fn">path</span> = <span class="str">"/bin/sh"</span>
+    <span class="fn">args</span> = <span class="punct">[</span><span class="str">"-ec"</span><span class="punct">,</span> <span class="str">"docker rm -f pikoci-pg"</span><span class="punct">]</span>
+  <span class="punct">}</span>
+<span class="punct">}</span>
+
+<span class="kw">job</span> <span class="str">"integration"</span> <span class="punct">{</span>
+  <span class="kw">service</span> <span class="str">"postgres"</span> <span class="punct">{}</span>
+
+  <span class="kw">get</span> <span class="str">"cron"</span> <span class="str">"tick"</span> <span class="punct">{</span> <span class="fn">trigger</span> = <span class="bool">true</span> <span class="punct">}</span>
+  <span class="kw">task</span> <span class="str">"test"</span> <span class="punct">{</span>
+    <span class="kw">run</span> <span class="str">"exec"</span> <span class="punct">{</span>
+      <span class="fn">path</span> = <span class="str">"make"</span>
+      <span class="fn">args</span> = <span class="punct">[</span><span class="str">"test"</span><span class="punct">]</span>
+    <span class="punct">}</span>
+  <span class="punct">}</span>
+<span class="punct">}</span></pre>
+        </div>
+        <!-- Tab: With secrets -->
+        <div class="code-panel" data-tab="secrets">
+<pre><span class="kw">secret_type</span> <span class="str">"env"</span> <span class="punct">{</span>
+  <span class="fn">source</span> = <span class="str">"pikoci://file"</span>
+  <span class="fn">format</span> = <span class="str">"env"</span>
+  <span class="fn">path</span>   = <span class="str">"/etc/pikoci/secrets.env"</span>
+<span class="punct">}</span>
+
+<span class="kw">variable</span> <span class="str">"deploy_token"</span> <span class="punct">{</span>
+  <span class="fn">type</span> = <span class="fn">string</span>
+  <span class="kw">secret</span> <span class="str">"env"</span> <span class="punct">{</span>
+    <span class="fn">key</span> = <span class="str">"DEPLOY_TOKEN"</span>
+  <span class="punct">}</span>
+<span class="punct">}</span>
+
+<span class="kw">resource_type</span> <span class="str">"git"</span> <span class="punct">{</span>
+  <span class="fn">source</span> = <span class="str">"pikoci://git"</span>
+<span class="punct">}</span>
+
+<span class="kw">resource</span> <span class="str">"git"</span> <span class="str">"app"</span> <span class="punct">{</span>
+  <span class="kw">params</span> <span class="punct">{</span>
+    <span class="fn">url</span>   = <span class="str">"https://github.com/myorg/app.git"</span>
+    <span class="fn">name</span>  = <span class="str">"app"</span>
+    <span class="fn">token</span> = <span class="fn">var.deploy_token</span>
+  <span class="punct">}</span>
+<span class="punct">}</span>
+
+<span class="kw">job</span> <span class="str">"deploy"</span> <span class="punct">{</span>
+  <span class="kw">get</span> <span class="str">"git"</span> <span class="str">"app"</span> <span class="punct">{</span> <span class="fn">trigger</span> = <span class="bool">true</span> <span class="punct">}</span>
+  <span class="kw">task</span> <span class="str">"push"</span> <span class="punct">{</span>
+    <span class="kw">run</span> <span class="str">"exec"</span> <span class="punct">{</span>
+      <span class="fn">path</span> = <span class="str">"/bin/sh"</span>
+      <span class="fn">args</span> = <span class="punct">[</span><span class="str">"-c"</span><span class="punct">,</span> <span class="str">"cd app && ./deploy.sh"</span><span class="punct">]</span>
+    <span class="punct">}</span>
+  <span class="punct">}</span>
+<span class="punct">}</span></pre>
+        </div>
+      </div>
+    </div>
+    <p class="code-caption"><a href="https://github.com/pikoci/pikoci/blob/master/deploy/pipeline.hcl">View PikoCI's own pipeline.hcl on GitHub &rarr;</a></p>
+  </div>
+</section>
+
+<!-- Quick Start -->
+<section class="section quickstart fade-in">
+  <div class="container">
+    <div class="section-label">Quick start</div>
+    <h2 class="section-title">Running in seconds.</h2>
+    <p class="section-desc">Three commands. No dependencies. Your pipeline is already loaded and running.</p>
+    <div class="terminal">
+      <div class="terminal-header">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+      </div>
+      <div class="terminal-body">
+<pre><span class="prompt">$</span> <span class="cmd">curl -L https://github.com/pikoci/pikoci/releases/latest/download/linux-amd64 -o pikoci && chmod +x pikoci</span>
+
+<span class="prompt">$</span> <span class="cmd">./pikoci server --db-system mem --pubsub-system mem --run-worker --pipeline-config pipeline.hcl</span>
+
+<span class="comment"># open http://localhost:8080</span></pre>
+      </div>
+    </div>
+    <p class="quickstart-note">Your pipeline is already loaded and running.</p>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-left">&copy; 2025 PikoCI. Apache 2.0 License.</div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/pikoci/pikoci">GitHub</a></li>
+      <li><a href="https://github.com/pikoci/pikoci/wiki">Docs</a></li>
+      <li><a href="https://ci.pikoci.com/teams/main/pipelines/pr_test">Live Pipeline</a></li>
+      <li><a href="https://ci.pikoci.com">App</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@viz-js/viz@3.11.0/lib/viz-standalone.js"></script>
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Fetch and render live pipeline
+  async function loadPipeline() {
+    const container = document.getElementById('pipeline-graph');
+    try {
+      const resp = await fetch('https://ci.pikoci.com/teams/main/pipelines/pr_test/image.dot', {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await resp.json();
+      if (data.image) {
+        const viz = await Viz.instance();
+        const svg = viz.renderSVGElement(data.image);
+        svg.removeAttribute('width');
+        svg.removeAttribute('height');
+        svg.style.maxWidth = '100%';
+        svg.style.height = 'auto';
+        // Remove white background
+        const bgPolygon = svg.querySelector('.graph > polygon');
+        if (bgPolygon) bgPolygon.setAttribute('fill', 'transparent');
+        // Restyle for dark background
+        svg.querySelectorAll('text').forEach(t => {
+          if (t.getAttribute('fill') === '#000000' || t.getAttribute('fill') === 'black') {
+            t.setAttribute('fill', '#C2C3C7');
+          }
+        });
+        svg.querySelectorAll('polygon, path, ellipse').forEach(el => {
+          const stroke = el.getAttribute('stroke');
+          if (stroke === '#000000' || stroke === 'black') {
+            el.setAttribute('stroke', '#1D2B53');
+          }
+        });
+        // Make links point to ci.pikoci.com
+        svg.querySelectorAll('a').forEach(a => {
+          const href = a.getAttribute('xlink:href') || a.getAttribute('href');
+          if (href && href.startsWith('/')) {
+            a.setAttribute('xlink:href', 'https://ci.pikoci.com' + href);
+            a.setAttribute('href', 'https://ci.pikoci.com' + href);
+            a.setAttribute('target', '_blank');
+          }
+        });
+        container.innerHTML = '';
+        container.appendChild(svg);
+      }
+    } catch (e) {
+      container.innerHTML = '<span class="loading">Pipeline unavailable. <a href="https://ci.pikoci.com/teams/main/pipelines/pr_test" style="color: var(--accent);">View on ci.pikoci.com</a></span>';
+    }
+  }
+
+  loadPipeline();
+  setInterval(loadPipeline, 30000);
+
+  // Code tabs
+  document.querySelectorAll('.code-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.code-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelector(`.code-panel[data-tab="${target}"]`).classList.add('active');
+    });
+  });
+
+</script>
+
+</body>
+</html>
