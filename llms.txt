@@ -1,0 +1,26 @@
+# PikoCI
+
+> PikoCI is a self-hosted, portable CI/CD system. One binary, any database, any queue, runs anywhere.
+
+PikoCI is an open-source CI/CD system inspired by Concourse CI, built around a resource/resource-type pipeline model. It runs as a single binary with pluggable database (SQLite, MySQL, PostgreSQL, in-memory) and queue (NATS, Kafka, RabbitMQ, in-memory) backends.
+
+## Key Features
+
+- Single binary: download and run, no external dependencies required
+- Portable: bundle the binary with a pipeline config and SQLite file, move anywhere
+- HCL pipelines: Terraform-style syntax for defining CI/CD pipelines
+- Resource model: pipelines built from resources and resource types
+- Pluggable runners: run jobs on the host machine, in Docker containers, or custom runners
+- Services: ephemeral processes (databases, caches) that run alongside job tasks
+- Secret backends: pluggable secret resolution (file-based, env-based)
+- Public pipelines: share pipeline status without requiring authentication
+- Local execution: `pikoci run` executes pipeline jobs locally without a server
+- Built-in web UI: visualize pipelines, stream build logs, manage configuration
+
+## Links
+
+- Website: https://pikoci.com
+- GitHub: https://github.com/PikoCI/pikoci
+- Documentation: https://github.com/PikoCI/pikoci/wiki
+- Live instance: https://ci.pikoci.com
+- License: Apache 2.0
