@@ -1,26 +1,236 @@
 # PikoCI
 
-> PikoCI is a self-hosted, portable CI/CD system. One binary, any database, any queue, runs anywhere.
+> Self-hosted, portable CI/CD system. One binary, any database, any queue, runs anywhere.
 
-PikoCI is an open-source CI/CD system inspired by Concourse CI, built around a resource/resource-type pipeline model. It runs as a single binary with pluggable database (SQLite, MySQL, PostgreSQL, in-memory) and queue (NATS, Kafka, RabbitMQ, in-memory) backends.
+PikoCI is a self-hosted CI/CD system built around a resource/resource-type
+pipeline model inspired by Concourse CI, designed to run anywhere without
+operational pain. It runs as a single binary with no external dependencies
+required — use in-memory mode, SQLite for persistence, or plug in MySQL,
+PostgreSQL, NATS, Kafka, or RabbitMQ when you need scale.
+Pipelines are defined in HCL.
 
-## Key Features
+## Key URLs
 
-- Single binary: download and run, no external dependencies required
-- Portable: bundle the binary with a pipeline config and SQLite file, move anywhere
-- HCL pipelines: Terraform-style syntax for defining CI/CD pipelines
-- Resource model: pipelines built from resources and resource types
-- Pluggable runners: run jobs on the host machine, in Docker containers, or custom runners
-- Services: ephemeral processes (databases, caches) that run alongside job tasks
-- Secret backends: pluggable secret resolution (file-based, env-based)
-- Public pipelines: share pipeline status without requiring authentication
-- Local execution: `pikoci run` executes pipeline jobs locally without a server
-- Built-in web UI: visualize pipelines, stream build logs, manage configuration
-
-## Links
-
-- Website: https://pikoci.com
+- Homepage: https://pikoci.com
 - GitHub: https://github.com/PikoCI/pikoci
-- Documentation: https://github.com/PikoCI/pikoci/wiki
-- Live instance: https://ci.pikoci.com
-- License: Apache 2.0
+- Live public pipeline: https://ci.pikoci.com/teams/main/pipelines/pikoci
+- Wiki home: https://github.com/PikoCI/pikoci/wiki
+
+## Core concepts
+
+**resource_type** — defines how to interact with an external resource.
+Implements three operations: check (detect new versions), pull (fetch the
+resource), push (write back to the resource). Written as shell scripts.
+
+**resource** — an instance of a resource_type with specific params.
+Examples: a git repository, an S3 bucket, a Docker image registry.
+
+**job** — runs tasks, triggered by resource version changes. Has get steps
+(pull resources), task steps (run commands), put steps (push resources),
+and hooks (on_success, on_failure, on_cancel, ensure).
+
+**runner_type** — defines how tasks execute. Built-in runners: exec (runs on
+host machine), docker (runs in a container). Custom runners can be defined.
+
+**secret_type / secret** — credential management. Same pattern as
+resource_type/resource. Built-in: file (reads from local files), vault
+(HashiCorp Vault). Custom implementations supported.
+
+**service_type** — ephemeral process or container that runs alongside job tasks.
+Started before tasks, stopped after job completes regardless of outcome.
+Used for test databases, mock servers, etc. Defines start, ready_check, and stop.
+
+**variable** — pipeline parameters passed at creation time. Used for
+environment-specific values and secrets.
+
+## Pipeline HCL structure
+
+```hcl
+# Define how to interact with a resource (or use source = "pikoci://git")
+resource_type "git" {
+  params = ["url", "name", "branch", "token"]
+  check "exec" {
+    path = "/bin/sh"
+    args = ["-ec", "git ls-remote $param_url HEAD | awk '{print $1}'"]
+  }
+  pull "exec" {
+    path = "/bin/sh"
+    args = ["-ec", "git clone $param_url $param_name"]
+  }
+  push "exec" { }
+}
+
+# Instantiate a resource
+resource "git" "my-repo" {
+  params {
+    url  = "https://github.com/org/repo.git"
+    name = "repo"
+  }
+  check_interval = "@every 1m"
+}
+
+# Define a job
+job "test" {
+  get "git" "my-repo" {
+    trigger = true
+  }
+  task "run-tests" {
+    run "docker" {
+      image = "golang:1.25"
+      cmd   = "cd repo && make test"
+    }
+  }
+  on_success {
+    put "git" "my-repo" {}
+  }
+  on_failure {
+    task "notify" {
+      run "exec" {
+        path = "/bin/sh"
+        args = ["-c", "echo 'Build failed'"]
+      }
+    }
+  }
+}
+```
+
+## Running PikoCI
+
+Minimum setup — in-memory, single binary, pipeline loaded at startup:
+```bash
+./pikoci server \
+  --db-system mem \
+  --pubsub-system mem \
+  --run-worker \
+  --pipeline-name my-pipeline \
+  --pipeline-config pipeline.hcl \
+  --jwt-secret mysecret \
+  --users admin:admin123
+```
+
+Default credentials: admin / admin123
+
+With SQLite for persistence:
+```bash
+./pikoci server \
+  --db-system sqlite \
+  --pubsub-system mem \
+  --run-worker \
+  --pipeline-name my-pipeline \
+  --pipeline-config pipeline.hcl \
+  --jwt-secret mysecret
+```
+
+Local execution (no server needed):
+```bash
+./pikoci run -p pipeline.hcl -j test
+./pikoci run -p pipeline.hcl -j test --resource git.my-repo=./local-dir
+```
+
+Separate worker:
+```bash
+./pikoci worker \
+  --pikoci-url http://server:8080 \
+  --pubsub-system nats \
+  --worker-token <token>
+```
+
+## Database backends
+
+- `mem` — in-memory, no persistence, good for development
+- `sqlite` — file-based, portable, good for single-server setups
+- `mysql` — MySQL or MariaDB
+- `postgresql` — PostgreSQL
+
+## Queue backends (via google/go-cloud)
+
+- `mem` — in-memory, single process only
+- `nats` — NATS server (set NATS_SERVER_URL)
+- `rabbit` — RabbitMQ (set RABBIT_SERVER_URL)
+- `kafka` — Apache Kafka (set KAFKA_BROKERS)
+
+## Built-in resource types
+
+- `cron` — triggers on a schedule, returns new version on every check
+- `git` — git repositories with support for branches, PRs, and tags
+- `github-check` — GitHub check runs for CI status reporting
+- `trigger` — manual trigger resource
+
+## Built-in runners
+
+- `exec` — runs commands directly on the worker host machine
+- `docker` — runs commands inside a Docker container
+
+## Built-in secret types
+
+- `file` — reads secrets from a local file (env or raw format)
+- `vault` — HashiCorp Vault (params: path, address, token)
+
+## Services (ephemeral per-job)
+
+```hcl
+service_type "postgres" {
+  params = ["version"]
+  start "exec" {
+    path = "/bin/sh"
+    args = ["-ec", "docker run -d --name pikoci-${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-pg -p 5432:5432 -e POSTGRES_PASSWORD=test postgres:$param_version"]
+  }
+  ready_check "exec" {
+    path     = "/bin/sh"
+    args     = ["-ec", "docker exec pikoci-${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-pg pg_isready"]
+    interval = "2s"
+    timeout  = "30s"
+  }
+  stop "exec" {
+    path = "/bin/sh"
+    args = ["-ec", "docker rm -f pikoci-${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-pg || true"]
+  }
+}
+
+job "integration-test" {
+  service "postgres" { version = "16" }
+  get "cron" "tick" { trigger = true }
+  task "test" {
+    run "exec" {
+      path = "make"
+      args = ["integration-test"]
+    }
+  }
+}
+```
+
+## Environment variables available in jobs
+
+- `$BUILD_NUMBER` — sequential build number for the current job
+- `$BUILD_PIPELINE_NAME` — pipeline canonical name
+- `$BUILD_JOB_NAME` — job name
+- `$WORKDIR` — shared working directory for all tasks in the job
+- `$version_<key>` — version fields from resource check output
+- `$param_<key>` — resource/service/secret params
+- `$secret_<key>` — secret values from secret type get output
+
+## Public pipelines
+
+Pipelines can be marked public so anyone can view their status without an
+account. Useful for open source projects. Example:
+https://ci.pikoci.com/teams/main/pipelines/pikoci shows PikoCI's own CI pipeline.
+
+## Documentation pages
+
+- Getting Started: https://github.com/PikoCI/pikoci/wiki/Getting-Started
+- Pipeline Reference: https://github.com/PikoCI/pikoci/wiki/Pipeline
+- Resource Types: https://github.com/PikoCI/pikoci/wiki/Resource-Types
+- Runners: https://github.com/PikoCI/pikoci/wiki/Runners
+- Secret Types: https://github.com/PikoCI/pikoci/wiki/Secret-Types
+- Services: https://github.com/PikoCI/pikoci/wiki/Services
+- Server Configuration: https://github.com/PikoCI/pikoci/wiki/Server
+- Database Backends: https://github.com/PikoCI/pikoci/wiki/Database
+- Queue Backends: https://github.com/PikoCI/pikoci/wiki/Queue
+- Variables: https://github.com/PikoCI/pikoci/wiki/Variables
+- Functions: https://github.com/PikoCI/pikoci/wiki/Functions
+- CLI Reference: https://github.com/PikoCI/pikoci/wiki/CLI
+- Public Pipelines: https://github.com/PikoCI/pikoci/wiki/Public-Pipelines
+- Workers: https://github.com/PikoCI/pikoci/wiki/Workers
+- Deployment: https://github.com/PikoCI/pikoci/wiki/Deployment
+- Portability and Bundling: https://github.com/PikoCI/pikoci/wiki/Portability
+- Coming from Concourse: https://github.com/PikoCI/pikoci/wiki/Concourse
