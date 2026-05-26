@@ -14,7 +14,7 @@ Pipelines are defined in HCL.
 - Homepage: https://pikoci.com
 - GitHub: https://github.com/PikoCI/pikoci
 - Live public pipeline: https://ci.pikoci.com/teams/main/pipelines/pikoci
-- Wiki home: https://github.com/PikoCI/pikoci/wiki
+- Documentation: https://docs.pikoci.com
 
 ## Core concepts
 
@@ -217,20 +217,20 @@ https://ci.pikoci.com/teams/main/pipelines/pikoci shows PikoCI's own CI pipeline
 
 ## Documentation pages
 
-- Getting Started: https://github.com/PikoCI/pikoci/wiki/Getting-Started
-- Pipeline Reference: https://github.com/PikoCI/pikoci/wiki/Pipeline
-- Resource Types: https://github.com/PikoCI/pikoci/wiki/Resource-Types
-- Runners: https://github.com/PikoCI/pikoci/wiki/Runners
-- Secret Types: https://github.com/PikoCI/pikoci/wiki/Secret-Types
-- Services: https://github.com/PikoCI/pikoci/wiki/Services
-- Server Configuration: https://github.com/PikoCI/pikoci/wiki/Server
-- Database Backends: https://github.com/PikoCI/pikoci/wiki/Database
-- Queue Backends: https://github.com/PikoCI/pikoci/wiki/Queue
-- Variables: https://github.com/PikoCI/pikoci/wiki/Variables
-- Functions: https://github.com/PikoCI/pikoci/wiki/Functions
-- CLI Reference: https://github.com/PikoCI/pikoci/wiki/CLI
-- Public Pipelines: https://github.com/PikoCI/pikoci/wiki/Public-Pipelines
-- Workers: https://github.com/PikoCI/pikoci/wiki/Workers
-- Deployment: https://github.com/PikoCI/pikoci/wiki/Deployment
-- Portability and Bundling: https://github.com/PikoCI/pikoci/wiki/Portability
-- Coming from Concourse: https://github.com/PikoCI/pikoci/wiki/Concourse
+- Getting Started: https://docs.pikoci.com/Getting-Started
+- Pipeline Reference: https://docs.pikoci.com/Pipeline
+- Resource Types: https://docs.pikoci.com/Resource-Types
+- Runners: https://docs.pikoci.com/Runners
+- Secret Types: https://docs.pikoci.com/Secret-Types
+- Services: https://docs.pikoci.com/Services
+- Server Configuration: https://docs.pikoci.com/Server
+- Database Backends: https://docs.pikoci.com/Database
+- Queue Backends: https://docs.pikoci.com/Queue
+- Variables: https://docs.pikoci.com/Variables
+- Functions: https://docs.pikoci.com/Functions
+- CLI Reference: https://docs.pikoci.com/CLI
+- Public Pipelines: https://docs.pikoci.com/Public-Pipelines
+- Workers: https://docs.pikoci.com/Workers
+- Deployment: https://docs.pikoci.com/Deployment
+- Portability and Bundling: https://docs.pikoci.com/Portability
+- Coming from Concourse: https://docs.pikoci.com/Concourse
