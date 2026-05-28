@@ -929,9 +929,12 @@
         <div class="dot dot-green"></div>
       </div>
       <div class="terminal-body">
-<pre><span class="prompt">$</span> <span class="cmd">curl -L https://github.com/pikoci/pikoci/releases/latest/download/linux-amd64 -o pikoci && chmod +x pikoci</span>
-
+<pre><span class="comment"># Download the binary</span>
+<span class="prompt">$</span> <span class="cmd">curl -L https://github.com/pikoci/pikoci/releases/latest/download/linux-amd64 -o pikoci && chmod +x pikoci</span>
 <span class="prompt">$</span> <span class="cmd">./pikoci server --db-system mem --pubsub-system mem --run-worker --pipeline-config pipeline.hcl</span>
+
+<span class="comment"># Or use Docker</span>
+<span class="prompt">$</span> <span class="cmd">docker run -p 8080:8080 ghcr.io/pikoci/pikoci:latest server --db-system mem --pubsub-system mem --run-worker --pipeline-config pipeline.hcl</span>
 
 <span class="comment"># open http://localhost:8080</span></pre>
       </div>
