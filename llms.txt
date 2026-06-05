@@ -27,10 +27,16 @@ Examples: a git repository, an S3 bucket, a Docker image registry.
 
 **job** — runs tasks, triggered by resource version changes. Has get steps
 (pull resources), task steps (run commands), put steps (push resources),
-and hooks (on_success, on_failure, on_cancel, ensure).
+notify steps (send notifications), and hooks (on_success, on_failure, ensure).
 
 **runner_type** — defines how tasks execute. Built-in runners: exec (runs on
-host machine), docker (runs in a container). Custom runners can be defined.
+host machine), docker (runs in a container), shell (simplified shell commands).
+Custom runners can be defined.
+
+**notification_type / notification** — fire-and-forget notifications sent
+during or after job execution. Notifications can be triggered automatically
+based on build events (success, failure) or explicitly via notify steps in
+job plans. Built-in types: slack, discord, github-check.
 
 **secret_type / secret** — credential management. Same pattern as
 resource_type/resource. Built-in: file (reads from local files), vault
@@ -153,18 +159,35 @@ Separate worker:
 
 - `cron` — triggers on a schedule, returns new version on every check
 - `git` — git repositories with support for branches, PRs, and tags
-- `github-check` — GitHub check runs for CI status reporting
-- `trigger` — manual trigger resource
+- `trigger` — cross-pipeline triggers via put/get steps
+- `artifact` — passes files between pipelines via put/get steps
 
 ## Built-in runners
 
 - `exec` — runs commands directly on the worker host machine
 - `docker` — runs commands inside a Docker container
+- `shell` — simplified shell command execution (inline `cmd` or script `file`)
 
 ## Built-in secret types
 
 - `file` — reads secrets from a local file (env or raw format)
 - `vault` — HashiCorp Vault (params: path, address, token)
+
+## Built-in notification types
+
+- `slack` — sends messages to Slack channels via webhooks
+- `discord` — sends messages to Discord channels via webhooks
+- `github-check` — creates GitHub check runs for CI status reporting
+
+## Built-in service types
+
+- `mariadb` — MariaDB/MySQL database
+- `postgresql` — PostgreSQL database
+- `nats` — NATS messaging server
+- `rabbitmq` — RabbitMQ message broker
+- `kafka` — Apache Kafka broker
+- `vault` — HashiCorp Vault secrets server
+- `redis` — Redis key-value store
 
 ## Services (ephemeral per-job)
 
@@ -208,6 +231,9 @@ job "integration-test" {
 - `$version_<key>` — version fields from resource check output
 - `$param_<key>` — resource/service/secret params
 - `$secret_<key>` — secret values from secret type get output
+- `$PIKOCI_OUTPUT` — file path where task steps can write KEY=VALUE lines to export values
+- `$GET_<STEPNAME>_<KEY>` — version metadata exported by get steps for subsequent steps
+- `$TASK_<STEPNAME>_<KEY>` — values exported by task steps via `$PIKOCI_OUTPUT`
 
 ## Public pipelines
 
@@ -233,4 +259,8 @@ https://ci.pikoci.com/teams/main/pipelines/pikoci shows PikoCI's own CI pipeline
 - Workers: https://docs.pikoci.com/Workers
 - Deployment: https://docs.pikoci.com/Deployment
 - Portability and Bundling: https://docs.pikoci.com/Portability
+- Notifications: https://docs.pikoci.com/Notifications
+- Resource Pinning: https://docs.pikoci.com/Resource-Pinning
+- Pause/Unpause: https://docs.pikoci.com/Pause
+- Scaling: https://docs.pikoci.com/Scaling
 - Coming from Concourse: https://docs.pikoci.com/Concourse
