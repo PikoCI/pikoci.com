@@ -1,12 +1,12 @@
 # PikoCI
 
-> Self-hosted, portable CI/CD system. One binary, any database, any queue, runs anywhere.
+> Self-hosted, portable CI/CD system. One binary, any database, runs anywhere.
 
 PikoCI is a self-hosted CI/CD system built around a resource/resource-type
 pipeline model inspired by Concourse CI, designed to run anywhere without
 operational pain. It runs as a single binary with no external dependencies
-required — use in-memory mode, SQLite for persistence, or plug in MySQL,
-PostgreSQL, NATS, Kafka, or RabbitMQ when you need scale.
+required — use in-memory mode, SQLite for persistence, or plug in MySQL or
+PostgreSQL when you need scale.
 Pipelines are defined in HCL.
 
 ## Key URLs
@@ -106,7 +106,6 @@ Minimum setup — in-memory, single binary, pipeline loaded at startup:
 ```bash
 ./pikoci server \
   --db-system mem \
-  --pubsub-system mem \
   --run-worker \
   --pipeline-name my-pipeline \
   --pipeline-config pipeline.hcl \
@@ -120,7 +119,6 @@ With SQLite for persistence:
 ```bash
 ./pikoci server \
   --db-system sqlite \
-  --pubsub-system mem \
   --run-worker \
   --pipeline-name my-pipeline \
   --pipeline-config pipeline.hcl \
@@ -133,11 +131,10 @@ Local execution (no server needed):
 ./pikoci run -p pipeline.hcl -j test --resource git.my-repo=./local-dir
 ```
 
-Separate worker:
+Separate worker (uses HTTP long polling, no external queue needed):
 ```bash
 ./pikoci worker \
   --pikoci-url http://server:8080 \
-  --pubsub-system nats \
   --worker-token <token>
 ```
 
@@ -147,13 +144,6 @@ Separate worker:
 - `sqlite` — file-based, portable, good for single-server setups
 - `mysql` — MySQL or MariaDB
 - `postgresql` — PostgreSQL
-
-## Queue backends (via google/go-cloud)
-
-- `mem` — in-memory, single process only
-- `nats` — NATS server (set NATS_SERVER_URL)
-- `rabbit` — RabbitMQ (set RABBIT_SERVER_URL)
-- `kafka` — Apache Kafka (set KAFKA_BROKERS)
 
 ## Built-in resource types
 
@@ -251,7 +241,6 @@ https://ci.pikoci.com/teams/main/pipelines/pikoci shows PikoCI's own CI pipeline
 - Services: https://docs.pikoci.com/Services
 - Server Configuration: https://docs.pikoci.com/Server
 - Database Backends: https://docs.pikoci.com/Database
-- Queue Backends: https://docs.pikoci.com/Queue
 - Variables: https://docs.pikoci.com/Variables
 - Functions: https://docs.pikoci.com/Functions
 - CLI Reference: https://docs.pikoci.com/CLI

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PikoCI - The CI/CD that grows with you</title>
-  <meta name="description" content="Self-hosted, portable CI/CD system. One binary, any database, any queue, runs anywhere. Open-source, inspired by Concourse CI.">
+  <meta name="description" content="Self-hosted, portable CI/CD system. One binary, any database, runs anywhere. Open-source, inspired by Concourse CI.">
   <meta name="keywords" content="CI/CD, continuous integration, continuous delivery, self-hosted, portable, HCL, pipelines, open source, Concourse CI alternative">
   <meta name="author" content="PikoCI">
   <link rel="canonical" href="https://pikoci.com">
@@ -12,7 +12,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://pikoci.com">
   <meta property="og:title" content="PikoCI — The CI/CD that grows with you">
-  <meta property="og:description" content="Self-hosted, portable CI/CD system. One binary, any database, any queue, runs anywhere.">
+  <meta property="og:description" content="Self-hosted, portable CI/CD system. One binary, any database, runs anywhere.">
   <meta property="og:image" content="https://pikoci.com/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -20,7 +20,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="PikoCI — The CI/CD that grows with you">
-  <meta name="twitter:description" content="Self-hosted, portable CI/CD system. One binary, any database, any queue, runs anywhere.">
+  <meta name="twitter:description" content="Self-hosted, portable CI/CD system. One binary, any database, runs anywhere.">
   <meta name="twitter:image" content="https://pikoci.com/og-image.png">
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -684,7 +684,7 @@
     "@type": "SoftwareApplication",
     "name": "PikoCI",
     "url": "https://pikoci.com",
-    "description": "Self-hosted, portable CI/CD system. One binary, any database, any queue, runs anywhere.",
+    "description": "Self-hosted, portable CI/CD system. One binary, any database, runs anywhere.",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Linux, macOS",
     "license": "https://www.apache.org/licenses/LICENSE-2.0",
@@ -728,7 +728,7 @@
   <div class="container">
     <div class="hero-badge">Open Source CI/CD</div>
     <h1>PikoCI, the CI/CD that <span class="accent">grows with you.</span></h1>
-    <p class="subtitle">One binary. Any database. Any queue. Runs anywhere.</p>
+    <p class="subtitle">One binary. Any database. Runs anywhere.</p>
     <div class="hero-cta">
       <a href="https://github.com/pikoci/pikoci#quick-start" class="btn btn-primary" onclick="gtag('event', 'click', {event_category: 'hero', event_label: 'get_started'})">Get Started</a>
       <a href="https://ci.pikoci.com/teams/main/pipelines/pikoci" class="btn btn-ghost" onclick="gtag('event', 'click', {event_category: 'hero', event_label: 'see_it_live'})">See it live</a>
@@ -938,10 +938,10 @@
       <div class="terminal-body">
 <pre><span class="comment"># Download the binary</span>
 <span class="prompt">$</span> <span class="cmd">curl -L https://github.com/pikoci/pikoci/releases/latest/download/linux-amd64 -o pikoci && chmod +x pikoci</span>
-<span class="prompt">$</span> <span class="cmd">./pikoci server --db-system mem --pubsub-system mem --run-worker --pipeline-config pipeline.hcl</span>
+<span class="prompt">$</span> <span class="cmd">./pikoci server --db-system mem --run-worker --pipeline-config pipeline.hcl</span>
 
 <span class="comment"># Or use Docker</span>
-<span class="prompt">$</span> <span class="cmd">docker run -p 8080:8080 ghcr.io/pikoci/pikoci:latest server --db-system mem --pubsub-system mem --run-worker --pipeline-config pipeline.hcl</span>
+<span class="prompt">$</span> <span class="cmd">docker run -p 8080:8080 ghcr.io/pikoci/pikoci:latest server --db-system mem --run-worker --pipeline-config pipeline.hcl</span>
 
 <span class="comment"># open http://localhost:8080</span></pre>
       </div>
