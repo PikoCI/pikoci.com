@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog - PikoCI</title>
+  <meta name="description" content="PikoCI blog - development updates, release notes, and technical deep dives.">
+  <link rel="canonical" href="https://pikoci.com/blog">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://pikoci.com/blog">
+  <meta property="og:title" content="Blog - PikoCI">
+  <meta property="og:description" content="PikoCI blog - development updates, release notes, and technical deep dives.">
+  <meta property="og:image" content="https://pikoci.com/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Blog - PikoCI">
+  <meta name="twitter:description" content="PikoCI blog - development updates, release notes, and technical deep dives.">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-W5TE6077M1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-W5TE6077M1');
+  </script>
+  <style>
+    :root {
+      --bg-deep: #0a0f1e;
+      --bg-surface: #111827;
+      --bg-card: #1a2238;
+      --text-primary: #FFF1E8;
+      --text-secondary: #C2C3C7;
+      --text-muted: #83769C;
+      --accent: #29ADFF;
+      --accent-hover: #1D8BD1;
+      --border: #1D2B53;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(29,43,83,0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(29,43,83,0.15) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      background: rgba(10,15,30,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav .container {
+      max-width: 1100px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .nav-brand svg { width: 28px; height: 28px; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text-primary); }
+    .nav-links a.active { color: var(--accent); }
+
+    .nav-links .btn-nav {
+      color: var(--bg-deep);
+      background: var(--accent);
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .nav-links .btn-nav:hover { background: var(--accent-hover); color: var(--bg-deep); }
+
+    .page-header {
+      padding: 140px 0 40px;
+    }
+
+    .page-header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .posts { padding: 0 0 60px; }
+
+    .post {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--border);
+      transition: transform 0.2s;
+    }
+
+    .post:first-child { border-top: 1px solid var(--border); }
+
+    .post:hover { transform: translateX(4px); }
+
+    .post-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .post-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .post:hover .post-title { color: var(--accent); }
+
+    .post-desc {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .follow-section {
+      padding: 40px 0 80px;
+    }
+
+    .follow-section h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text-muted);
+    }
+
+    .follow-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .follow-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .follow-link:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+
+    .follow-link .handle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+
+    .devto-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 24px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .devto-link:hover { text-decoration: underline; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+    }
+
+    footer .container {
+      max-width: 1100px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-left { font-size: 0.85rem; color: var(--text-muted); }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text-primary); }
+
+    @media (max-width: 768px) {
+      .page-header { padding: 120px 0 30px; }
+      .page-header h1 { font-size: 1.8rem; }
+      .nav-links { gap: 12px; }
+      .nav-links .hide-mobile { display: none; }
+      .follow-links { flex-direction: column; }
+      footer .container { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<nav>
+  <div class="container">
+    <a href="/" class="nav-brand">
+      <svg viewBox="0 0 100 100"><polygon points="50,3 93,27.5 93,72.5 50,97 7,72.5 7,27.5" fill="#29ADFF" stroke="#FFEC27" stroke-width="3.5"/><path d="M50,23 A27,27 0 1,1 26,64" fill="none" stroke="#FFF1E8" stroke-width="7" stroke-linecap="round"/><polygon points="17,56 26,76 40,62" fill="#FFF1E8"/><circle cx="50" cy="50" r="7" fill="#FFEC27"/></svg>
+      PikoCI
+    </a>
+    <ul class="nav-links">
+      <li class="hide-mobile"><a href="https://docs.pikoci.com">Docs</a></li>
+      <li class="hide-mobile"><a href="/blog" class="active">Blog</a></li>
+      <li><a href="https://github.com/pikoci/pikoci"><img src="https://img.shields.io/github/stars/pikoci/pikoci?style=social" alt="GitHub stars" style="height: 20px; vertical-align: middle;"></a></li>
+      <li><a href="https://github.com/pikoci/pikoci#quick-start" class="btn-nav">Get Started</a></li>
+    </ul>
+  </div>
+</nav>
+
+<section class="page-header">
+  <div class="container">
+    <h1>Blog</h1>
+  </div>
+</section>
+
+<section class="posts">
+  <div class="container">
+
+    <a class="post" href="https://dev.to/xescugc/pikoci-v06-new-pipeline-views-version-tracking-and-goodbye-backbone-1cd7" target="_blank" rel="noopener">
+      <div class="post-date">June 25, 2026</div>
+      <div class="post-title">PikoCI v0.6: New pipeline views, version tracking, and goodbye Backbone</div>
+      <div class="post-desc">The biggest UI release yet. New list view, resources panel, version tracking and Preact migration.</div>
+    </a>
+
+    <a class="post" href="https://dev.to/xescugc/pikoci-v050-worker-tagging-inparallel-linux-packages-and-more-32k0" target="_blank" rel="noopener">
+      <div class="post-date">June 16, 2026</div>
+      <div class="post-title">PikoCI v0.5.0: worker tagging, in_parallel, Linux packages, and more</div>
+      <div class="post-desc">Workers now use gRPC, in_parallel step, worker health monitoring and Linux packages.</div>
+    </a>
+
+    <a class="post" href="https://dev.to/xescugc/services-without-docker-in-docker-how-pikoci-handles-test-dependencies-5c74" target="_blank" rel="noopener">
+      <div class="post-date">June 9, 2026</div>
+      <div class="post-title">Services without Docker-in-Docker: how PikoCI handles test dependencies</div>
+      <div class="post-desc">How PikoCI handles ephemeral services alongside tasks without needing privileged containers.</div>
+    </a>
+
+    <a class="post" href="https://dev.to/xescugc/how-hard-can-it-be-to-build-a-cicd-system-1cnj" target="_blank" rel="noopener">
+      <div class="post-date">May 28, 2026</div>
+      <div class="post-title">How hard can it be to build a CI/CD system?</div>
+      <div class="post-desc">Why I started building PikoCI and what I learned along the way.</div>
+    </a>
+
+    <a class="devto-link" href="https://dev.to/xescugc" target="_blank" rel="noopener">Follow on dev.to for all posts &rarr;</a>
+
+  </div>
+</section>
+
+<section class="follow-section">
+  <div class="container">
+    <h2>Follow along</h2>
+    <div class="follow-links">
+      <a class="follow-link" href="https://x.com/pikoci_dev" target="_blank" rel="noopener">X <span class="handle">@pikoci_dev</span></a>
+      <a class="follow-link" href="https://bsky.app/profile/pikoci-dev.bsky.social" target="_blank" rel="noopener">Bluesky <span class="handle">@pikoci.com</span></a>
+      <a class="follow-link" href="https://mastodon.social/@pikoci_dev" target="_blank" rel="noopener">Mastodon <span class="handle">@pikoci_dev</span></a>
+      <a class="follow-link" href="https://youtube.com/@pikoci_devv" target="_blank" rel="noopener">YouTube <span class="handle">@pikoci_devv</span></a>
+      <a class="follow-link" href="https://discord.gg/gctEh24CTm" target="_blank" rel="noopener">Discord <span class="handle">PikoCI</span></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-left">&copy; 2026 PikoCI. Apache 2.0 License.</div>
+    <ul class="footer-links">
+      <li><a href="https://github.com/pikoci/pikoci">GitHub</a></li>
+      <li><a href="https://docs.pikoci.com">Docs</a></li>
+      <li><a href="/blog">Blog</a></li>
+      <li><a href="https://ci.pikoci.com/teams/main/pipelines/pikoci">Live Pipeline</a></li>
+      <li><a href="https://ci.pikoci.com">App</a></li>
+      <li><a href="https://discord.gg/gctEh24CTm">Discord</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>
