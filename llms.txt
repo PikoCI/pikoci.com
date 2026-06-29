@@ -27,7 +27,8 @@ Examples: a git repository, an S3 bucket, a Docker image registry.
 
 **job** — runs tasks, triggered by resource version changes. Has get steps
 (pull resources), task steps (run commands), put steps (push resources),
-notify steps (send notifications), and hooks (on_success, on_failure, ensure).
+notify steps (send notifications), approve blocks (human approval gates),
+and hooks (on_success, on_failure, ensure).
 
 **runner_type** — defines how tasks execute. Built-in runners: exec (runs on
 host machine), docker (runs in a container), shell (simplified shell commands).
@@ -225,6 +226,53 @@ job "integration-test" {
 - `$GET_<STEPNAME>_<KEY>` — version metadata exported by get steps for subsequent steps
 - `$TASK_<STEPNAME>_<KEY>` — values exported by task steps via `$PIKOCI_OUTPUT`
 
+## RBAC roles
+
+Team members are assigned hierarchical roles: Read (view only), Write
+(trigger/cancel/retry builds, pause/unpause), Maintain (create/edit/delete
+pipelines, manage resources), Admin (manage members and team settings).
+Global admins can manage users, teams, and workers across the system.
+
+## Approval gates
+
+Jobs can require human approval before builds start. Add an `approve` block
+inside a job to create a gate. Builds enter "Waiting for Approval" status
+(purple) and don't consume workers. Maintain+ users can approve or reject
+via UI, CLI, or API. Features: configurable approval count, optional
+notifications (e.g. Discord webhook), version pinning at build creation.
+
+```hcl
+job "deploy" {
+  get "git" "app" { passed = ["test"] }
+  approve "deploy to production" {
+    approvals = 2
+    notify "discord" "alerts" {
+      message = "Build #$BUILD_NUMBER needs approval $BUILD_URL"
+    }
+  }
+  task "deploy" {
+    run "exec" { path = "./deploy.sh" }
+  }
+}
+```
+
+## API tokens
+
+Personal or team-scoped tokens for non-interactive API access. Team-scoped
+tokens are capped at a role level. Format: `pko_` + 64 hex chars, stored
+as SHA-256 hash. Managed via UI (Profile > API Tokens), CLI, or API.
+
+## Audit log
+
+Append-only audit trail per team. Tracks pipeline, job, resource, build,
+and membership events. Filterable by user, action, and pipeline via UI,
+CLI (`audit list`), or API. Read+ access required.
+
+## Secrets masking
+
+Secret values are automatically replaced with `***` in build log output
+(real-time and stored). Values shorter than 3 characters are skipped.
+
 ## Public pipelines
 
 Pipelines can be marked public so anyone can view their status without an
@@ -252,4 +300,8 @@ https://ci.pikoci.com/teams/main/pipelines/pikoci shows PikoCI's own CI pipeline
 - Resource Pinning: https://docs.pikoci.com/Resource-Pinning
 - Pause/Unpause: https://docs.pikoci.com/Pause
 - Scaling: https://docs.pikoci.com/Scaling
+- Roles & Permissions: https://docs.pikoci.com/Roles
+- API Tokens: https://docs.pikoci.com/API-Tokens
+- Audit Log: https://docs.pikoci.com/Audit-Log
+- Approval Gates: https://docs.pikoci.com/Approval-Gates
 - Coming from Concourse: https://docs.pikoci.com/Concourse
