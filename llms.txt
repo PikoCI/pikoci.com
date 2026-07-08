@@ -179,6 +179,7 @@ Separate worker (uses HTTP long polling, no external queue needed):
 - `kafka` — Apache Kafka broker
 - `vault` — HashiCorp Vault secrets server
 - `redis` — Redis key-value store
+- `keycloak` — Keycloak identity server (for OAuth/OIDC testing)
 
 ## Services (ephemeral per-job)
 
@@ -262,6 +263,22 @@ Personal or team-scoped tokens for non-interactive API access. Team-scoped
 tokens are capped at a role level. Format: `pko_` + 64 hex chars, stored
 as SHA-256 hash. Managed via UI (Profile > API Tokens), CLI, or API.
 
+## Authentication
+
+PikoCI supports local username/password and OAuth/OIDC single sign-on.
+Both can be active simultaneously. Multiple OAuth providers supported.
+
+- **Local auth** — bcrypt-hashed passwords, can be disabled by admin
+- **OAuth/OIDC** — GitHub (OAuth2), Google, GitLab, Keycloak, Microsoft,
+  Bitbucket, or any OIDC/OAuth2 provider
+- Admin UI with provider templates that pre-fill URLs and scopes
+- Auto-create users on first OAuth login with profile completion step
+- Account linking — existing users link OAuth from Profile > Linked Accounts
+- OAuth users can set a local password from Profile > Password
+- Lockout prevention — cannot disable/delete auth methods if users would
+  lose access
+- `--external-url` server flag required for OAuth callback URLs
+
 ## Audit log
 
 Append-only audit trail per team. Tracks pipeline, job, resource, build,
@@ -304,4 +321,5 @@ https://ci.pikoci.com/teams/main/pipelines/pikoci shows PikoCI's own CI pipeline
 - API Tokens: https://docs.pikoci.com/API-Tokens
 - Audit Log: https://docs.pikoci.com/Audit-Log
 - Approval Gates: https://docs.pikoci.com/Approval-Gates
+- Authentication: https://docs.pikoci.com/Authentication
 - Coming from Concourse: https://docs.pikoci.com/Concourse
