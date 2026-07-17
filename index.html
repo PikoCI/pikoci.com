@@ -788,12 +788,12 @@
       <div class="feature-card">
         <div class="feature-icon" style="background: rgba(41,173,255,0.1); color: var(--accent);">03</div>
         <h3>Run pipelines locally</h3>
-        <p>The pipeline is the environment. Run it anywhere. <code>pikoci run -p pipeline.hcl -j test</code> runs any job on your laptop &mdash; no server, no push, no waiting. Override resources with local paths. Iterate before touching CI.</p>
+        <p>The pipeline is the environment. Run it anywhere. <code>pikoci run -p pipeline.hcl -j test</code> runs any job on your laptop, no server, no push, no waiting. Override resources with local paths. Iterate before touching CI.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background: rgba(131,118,156,0.1); color: var(--p8-lavender);">04</div>
-        <h3>Five pluggable abstractions</h3>
-        <p>Resource types, runners, services, secret backends, and notification types. Define once, reuse across jobs. Source any of them from a URL.</p>
+        <h3>Built for teams</h3>
+        <p>Role-based access, approval gates before deploys, audit log of every action, and OIDC single sign-on. The controls you need without the complexity you don't.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background: rgba(255,236,39,0.1); color: var(--p8-yellow);">05</div>
@@ -802,8 +802,8 @@
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background: rgba(255,204,170,0.1); color: var(--p8-peach);">06</div>
-        <h3>Truly portable</h3>
-        <p>Bundle the binary with a pipeline file and SQLite. Move it anywhere. Run it instantly.</p>
+        <h3>Pluggable everything</h3>
+        <p>Resource types, runners, services, secret backends, and notification types. Define once, reuse across jobs. Source any of them from a URL.</p>
       </div>
     </div>
   </div>
@@ -940,11 +940,11 @@
       </div>
       <div class="terminal-body">
 <pre><span class="comment"># Download the binary</span>
-<span class="prompt">$</span> <span class="cmd">curl -L https://github.com/pikoci/pikoci/releases/latest/download/linux-amd64 -o pikoci && chmod +x pikoci</span>
-<span class="prompt">$</span> <span class="cmd">./pikoci server --db-system mem --run-worker --pipeline-config pipeline.hcl</span>
+<span class="prompt">$</span> <span class="cmd">curl -L https://github.com/pikoci/pikoci/releases/latest/download/pikoci-linux-amd64 -o pikoci && chmod +x pikoci</span>
+<span class="prompt">$</span> <span class="cmd">./pikoci server --db-system mem --jwt-secret my-secret --run-worker --pipeline-config pipeline.hcl</span>
 
 <span class="comment"># Or use Docker</span>
-<span class="prompt">$</span> <span class="cmd">docker run -p 8080:8080 ghcr.io/pikoci/pikoci:latest server --db-system mem --run-worker --pipeline-config pipeline.hcl</span>
+<span class="prompt">$</span> <span class="cmd">docker run -p 8080:8080 ghcr.io/pikoci/pikoci:latest server --db-system mem --jwt-secret my-secret --run-worker --pipeline-config pipeline.hcl</span>
 
 <span class="comment"># open http://localhost:8080</span></pre>
       </div>
