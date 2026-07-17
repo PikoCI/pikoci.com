@@ -150,7 +150,9 @@
     .posts { padding: 0 0 60px; }
 
     .post {
-      display: block;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
       text-decoration: none;
       color: inherit;
       padding: 28px 0;
@@ -161,6 +163,20 @@
     .post:first-child { border-top: 1px solid var(--border); }
 
     .post:hover { transform: translateX(4px); }
+
+    .post-cover {
+      flex-shrink: 0;
+      width: 160px;
+      height: 100px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+    }
+
+    .post-body {
+      flex: 1;
+      min-width: 0;
+    }
 
     .post-date {
       font-family: 'JetBrains Mono', monospace;
@@ -279,6 +295,7 @@
       .page-header h1 { font-size: 1.8rem; }
       .nav-links { gap: 12px; }
       .nav-links .hide-mobile { display: none; }
+      .post-cover { display: none; }
       .follow-links { flex-direction: column; }
       footer .container { flex-direction: column; text-align: center; }
     }
@@ -313,39 +330,57 @@
   <div class="container">
 
     <a class="post" href="https://dev.to/xescugc/why-i-replaced-queue-based-worker-communication-with-grpc-32nd" target="_blank" rel="noopener">
-      <div class="post-date">July 16, 2026</div>
-      <div class="post-title">Why I replaced queue-based worker communication with gRPC</div>
-      <div class="post-desc">The architectural journey from NATS queues to gRPC streaming for worker communication.</div>
+      <img class="post-cover" src="https://media2.dev.to/dynamic/image/width=420,height=260,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.us-east-2.amazonaws.com%2Fuploads%2Farticles%2Fowe9yp7mf0iwrp531m8j.jpeg" alt="" loading="lazy">
+      <div class="post-body">
+        <div class="post-date">July 16, 2026</div>
+        <div class="post-title">Why I replaced queue-based worker communication with gRPC</div>
+        <div class="post-desc">The architectural journey from NATS queues to gRPC streaming for worker communication.</div>
+      </div>
     </a>
 
     <a class="post" href="https://dev.to/xescugc/pikoci-v070-approval-gates-audit-log-oidc-secrets-masking-and-build-reports-hlm" target="_blank" rel="noopener">
-      <div class="post-date">July 8, 2026</div>
-      <div class="post-title">PikoCI v0.7.0: Approval gates, audit log, OIDC, secrets masking, and build reports</div>
-      <div class="post-desc">The biggest release yet. Approval gates, audit log, OAuth/OIDC, secrets masking, and JSON build reports.</div>
+      <img class="post-cover" src="https://media2.dev.to/dynamic/image/width=420,height=260,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.us-east-2.amazonaws.com%2Fuploads%2Farticles%2Fzqp7wlit5zpsnoj7a68r.jpeg" alt="" loading="lazy">
+      <div class="post-body">
+        <div class="post-date">July 8, 2026</div>
+        <div class="post-title">PikoCI v0.7.0: Approval gates, audit log, OIDC, secrets masking, and build reports</div>
+        <div class="post-desc">The biggest release yet. Approval gates, audit log, OAuth/OIDC, secrets masking, and JSON build reports.</div>
+      </div>
     </a>
 
     <a class="post" href="https://dev.to/xescugc/pikoci-v06-new-pipeline-views-version-tracking-and-goodbye-backbone-1cd7" target="_blank" rel="noopener">
-      <div class="post-date">June 25, 2026</div>
-      <div class="post-title">PikoCI v0.6: New pipeline views, version tracking, and goodbye Backbone</div>
-      <div class="post-desc">The biggest UI release yet. New list view, resources panel, version tracking and Preact migration.</div>
+      <img class="post-cover" src="https://media2.dev.to/dynamic/image/width=420,height=260,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.us-east-2.amazonaws.com%2Fuploads%2Farticles%2Fzplhvdwfi3mac154a6v3.png" alt="" loading="lazy">
+      <div class="post-body">
+        <div class="post-date">June 25, 2026</div>
+        <div class="post-title">PikoCI v0.6: New pipeline views, version tracking, and goodbye Backbone</div>
+        <div class="post-desc">The biggest UI release yet. New list view, resources panel, version tracking and Preact migration.</div>
+      </div>
     </a>
 
     <a class="post" href="https://dev.to/xescugc/pikoci-v050-worker-tagging-inparallel-linux-packages-and-more-32k0" target="_blank" rel="noopener">
-      <div class="post-date">June 16, 2026</div>
-      <div class="post-title">PikoCI v0.5.0: worker tagging, in_parallel, Linux packages, and more</div>
-      <div class="post-desc">Workers now use gRPC, in_parallel step, worker health monitoring and Linux packages.</div>
+      <img class="post-cover" src="https://media2.dev.to/dynamic/image/width=420,height=260,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F7o2m7vzwj6p1q87pw3zi.png" alt="" loading="lazy">
+      <div class="post-body">
+        <div class="post-date">June 16, 2026</div>
+        <div class="post-title">PikoCI v0.5.0: worker tagging, in_parallel, Linux packages, and more</div>
+        <div class="post-desc">Workers now use gRPC, in_parallel step, worker health monitoring and Linux packages.</div>
+      </div>
     </a>
 
     <a class="post" href="https://dev.to/xescugc/services-without-docker-in-docker-how-pikoci-handles-test-dependencies-5c74" target="_blank" rel="noopener">
-      <div class="post-date">June 9, 2026</div>
-      <div class="post-title">Services without Docker-in-Docker: how PikoCI handles test dependencies</div>
-      <div class="post-desc">How PikoCI handles ephemeral services alongside tasks without needing privileged containers.</div>
+      <img class="post-cover" src="https://media2.dev.to/dynamic/image/width=420,height=260,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Ftg2frrn6sea7sb50sua6.png" alt="" loading="lazy">
+      <div class="post-body">
+        <div class="post-date">June 9, 2026</div>
+        <div class="post-title">Services without Docker-in-Docker: how PikoCI handles test dependencies</div>
+        <div class="post-desc">How PikoCI handles ephemeral services alongside tasks without needing privileged containers.</div>
+      </div>
     </a>
 
     <a class="post" href="https://dev.to/xescugc/how-hard-can-it-be-to-build-a-cicd-system-1cnj" target="_blank" rel="noopener">
-      <div class="post-date">May 28, 2026</div>
-      <div class="post-title">How hard can it be to build a CI/CD system?</div>
-      <div class="post-desc">Why I started building PikoCI and what I learned along the way.</div>
+      <img class="post-cover" src="https://media2.dev.to/dynamic/image/width=420,height=260,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fmqlx34635fvr0qf1ck06.png" alt="" loading="lazy">
+      <div class="post-body">
+        <div class="post-date">May 28, 2026</div>
+        <div class="post-title">How hard can it be to build a CI/CD system?</div>
+        <div class="post-desc">Why I started building PikoCI and what I learned along the way.</div>
+      </div>
     </a>
 
     <a class="devto-link" href="https://dev.to/xescugc" target="_blank" rel="noopener">Follow on dev.to for all posts &rarr;</a>
